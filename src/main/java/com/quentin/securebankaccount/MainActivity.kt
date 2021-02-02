@@ -2,10 +2,12 @@ package com.quentin.securebankaccount
 
 import android.os.Bundle
 import android.view.View
+import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.github.kittinunf.fuel.httpGet
 import com.github.kittinunf.result.Result
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.*
 import java.security.*
@@ -18,14 +20,13 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+    }
+
+    fun refreshClick(view: View){
         refresh()
     }
 
-    fun refreshClick(view:View){
-        refresh()
-    }
-
-    private fun getJson(url:String): Pair<Boolean,String> {
+    private fun getJson(url: String): Pair<Boolean, String> {
         var data = ""
         var connected = false
         val httpAsync = url
@@ -45,62 +46,60 @@ class MainActivity : AppCompatActivity() {
         return Pair(connected, data)
     }
 
-    private fun display(data:String, data2:String){
+    private fun display(data: String, data2: String){
+        findViewById<TextView>(R.id.bankInfos).text = ""
         val personalInfos = JSONObject(data)
         val name = personalInfos.getString("name")
         val lastname = personalInfos.getString("lastname")
         val personalInfosText = getString(R.string.name) + name + getString(R.string.lastname) + lastname
         findViewById<TextView>(R.id.personalInfos).text = personalInfosText
-        val account = JSONObject(data2)
-        val id = account.getString("id")
-        val accountName = account.getString("accountName")
-        val amount = account.getString("amount")
-        val iban = account.getString("iban")
-        val currency = account.getString("currency")
-        val accountText = getString(R.string.id) + id + getString(R.string.accountName) + accountName + getString(R.string.amount) + amount + getString(R.string.iban) + iban + getString(R.string.currency) + currency
-        findViewById<TextView>(R.id.bankInfos).text = accountText
+        val accounts = JSONArray(data2)
+        for (i in 0 until accounts.length()) {
+            val account = accounts.getJSONObject(i)
+            val id = account.getString("id")
+            val accountName = account.getString("accountName")
+            val amount = account.getString("amount")
+            val iban = account.getString("iban")
+            val currency = account.getString("currency")
+            val accountText = getString(R.string.id) + id + getString(R.string.accountName) + accountName + getString(R.string.amount) + amount + getString(R.string.iban) + iban + getString(R.string.currency) + currency
+            findViewById<TextView>(R.id.bankInfos).append(accountText)
+        }
     }
 
     private fun refresh(){
+        findViewById<TextView>(R.id.bankInfos).text = ""
+        findViewById<TextView>(R.id.personalInfos).text = ""
         var accepted = false
-        val osLoginW: OutputStream = openFileOutput("id.txt", MODE_PRIVATE)
-        val loutLoginW = BufferedWriter(OutputStreamWriter(osLoginW))
-        loutLoginW.write("1");//Replace the action of the user. Don't have to be hidden.
-        loutLoginW.close();
-        val osLoginR: InputStream = openFileInput("id.txt")
-        val loutLoginR = BufferedReader(InputStreamReader(osLoginR))
-        val dataLoginR = loutLoginR.readLine()
-        if (ID().contentEquals(dataLoginR)){
+        if (MasterKey().contentEquals(findViewById<EditText>(R.id.keyEditText).text)){
             accepted = true
         }
-        loutLoginR.close()
         if(accepted) {
             val pair1 = getJson(API() + "/" + ID())
-            val pair2 = getJson(API2() + "/" + ID())
+            val pair2 = getJson(API2())
             val connected = pair1.first && pair2.first
             var data = pair1.second
             var data2 = pair2.second
             if (connected) {
                 findViewById<TextView>(R.id.error).text = ""
-                display(data,data2)
+                display(data, data2)
                 val os: OutputStream = openFileOutput("personal_data.txt", MODE_PRIVATE)
                 val dataBytes = encryptMsg(data, Key())
                 os.write(dataBytes)
                 os.close()
                 val os2: OutputStream = openFileOutput("account_data.txt", MODE_PRIVATE)
                 val data2Bytes = encryptMsg(data2, Key())
-                os2.write(data2Bytes);
-                os2.close();
+                os2.write(data2Bytes)
+                os2.close()
             } else {
                 findViewById<TextView>(R.id.error).text = getString(R.string.interneterror)
                 try {
                     val os3: InputStream = openFileInput("personal_data.txt")
-                    data = decryptMsg(os3.readBytes(),Key()).toString()
+                    data = decryptMsg(os3.readBytes(), Key()).toString()
                     os3.close()
                     val os4: InputStream = openFileInput("account_data.txt")
-                    data2 = decryptMsg(os4.readBytes(),Key()).toString()
+                    data2 = decryptMsg(os4.readBytes(), Key()).toString()
                     os4.close()
-                    display(data,data2)
+                    display(data, data2)
                 } catch (e: Exception) {
                     findViewById<TextView>(R.id.error).text = getString(R.string.storageerror)
                 }
@@ -178,6 +177,7 @@ class MainActivity : AppCompatActivity() {
     external fun API2(): String
     external fun ID(): String
     external fun Key(): String
+    external fun MasterKey(): String
 
     companion object {
         // Used to load the 'native-lib' library on application startup.

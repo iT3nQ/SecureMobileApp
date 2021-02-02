@@ -11,4 +11,5 @@
     <string name="currency">\nCurrency : </string>
     <string name="rightserror">You don\'t have the rights to use the app.</string>
     <string name="storageerror">No internet connection\nYou have not been connected before.\nYou are not able to see your bank infos</string>
+    <string name="keyHint">Secret Key ?</string>
 </resources>

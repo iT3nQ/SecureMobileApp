@@ -28,3 +28,10 @@ Java_com_quentin_securebankaccount_MainActivity_Key(
     std::string key = "4ZVkF%ùKKb3m*nH/";
     return env->NewStringUTF(key.c_str());
 }
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_quentin_securebankaccount_MainActivity_MasterKey(
+        JNIEnv* env,
+        jobject /* this */) {
+    std::string key = "/B?E(H+M";
+    return env->NewStringUTF(key.c_str());
+}
