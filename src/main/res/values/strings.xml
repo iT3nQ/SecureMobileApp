@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">SecureBankAccount</string>
+    <string name="btnRefresh">Refresh</string>
+    <string name="name">Name : </string>
+    <string name="lastname">\nLast name : </string>
+    <string name="interneterror">No internet connection</string>
+    <string name="id">\nID : </string>
+    <string name="accountName">\nAccount name : </string>
+    <string name="amount">\nAmount : </string>
+    <string name="iban">\nIBAN : </string>
+    <string name="currency">\nCurrency : </string>
+    <string name="rightserror">You don\'t have the rights to use the app.</string>
+    <string name="storageerror">No internet connection\nYou have not been connected before.\nYou are not able to see your bank infos</string>
+</resources>
